@@ -2,10 +2,11 @@ import jwt from 'jsonwebtoken';
 
 // interjects the coming api call and works on it and lets go of it for the destination api to work on
 const fetchUser = (req, res, next) => {
+    const statusMessage = 'failed';
     const JWT_SECRET_KEY = 'secretKey';
     const authToken = req.header('Auth-Token');
     if(!authToken) {
-        return res.status(401).json({error: 'Please authenticate using a token'});
+        return res.status(401).json({statusMessage, msg: 'Please authenticate using a token'});
     }
     try {
         // verifys the auth token and decrypts the auth token to readable data and returns the payload
@@ -19,7 +20,7 @@ const fetchUser = (req, res, next) => {
         next();
     }
     catch (error) {
-        return res.status(401).json({error: 'Please authenticate using a valid token'});
+        return res.status(401).json({statusMessage, msg: 'Please authenticate using a valid token'});
     }
 };
 

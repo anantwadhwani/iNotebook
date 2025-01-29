@@ -1,14 +1,13 @@
 import React, { useContext } from 'react'
-import NoteContext from '../context/NoteContext';
+import NoteContext from '../context/note/NoteContext';
 
 const NoteItem = (props) => {
     const {deleteNote} = useContext(NoteContext);
-    const { note, setNoteToEdit, editNoteRef} = props;
+    const { note, updateNote, setAlert } = props;
     const { _id, title, description, tag } = note;
-
-    const editNoteClick = () => {
-        editNoteRef.current.click();
-        setNoteToEdit({ eTitle: note.title, eDescription: note.description});
+    const handleDeleteClick = () => {
+        deleteNote(_id);
+        setAlert({type: 'success', message: 'Note deleted'});
     }
 
     return (
@@ -18,8 +17,8 @@ const NoteItem = (props) => {
                     <div className='d-flex'>
                         <h5 className="card-title">{title}</h5>
                         <div className="ml-1">
-                            <i className="fa-regular fa-pen-to-square ms-3" onClick={editNoteClick}></i>
-                            <i className="fa-regular fa-trash-can ms-3" onClick={() => deleteNote(_id)}></i>
+                            <i className="fa-regular fa-pen-to-square ms-3" onClick={() => updateNote(note)}></i>
+                            <i className="fa-regular fa-trash-can ms-3" onClick={handleDeleteClick}></i>
                         </div>
                     </div>
                     <p className="card-text">{description}</p>

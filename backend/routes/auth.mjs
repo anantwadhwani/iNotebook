@@ -18,14 +18,12 @@ router.post(
         body("**").escape(),
     ],
     async (req, res) => {
+        let statusMessage = 'failed';
         const { name, password, email } = req.body;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+            return res.status(400).json({ statusMessage, msg: errors.array() });
         }
-
-        // const salt = bcrypt.genSalt(10);
-        // const secretPassword = await bcrypt.hash(password, salt);
 
         const salt = await bcrypt.genSalt(10);
         const secretPassword = await bcrypt.hash(password, salt);
@@ -45,12 +43,14 @@ router.post(
                     },
                 };
                 const authToken = jwt.sign(payload, JWT_SECRET_KEY);
-                return res.send(
-                    `User: ${name} has been created. This is the id: ${authToken}`
-                );
+                statusMessage = 'success';
+                return res.status(200).json({
+                    statusMessage,
+                    msg: `User: ${name} has been created. This is the id: ${authToken}`
+            });
             })
             .catch((error) =>
-                res.send(`User: ${name} not created due to ${error.message}`)
+                res.status(500).json({statusMessage, msg: `User: ${name} not created due to ${error.message}`})
             );
     }
 );
@@ -64,22 +64,23 @@ router.post(
         body("**", " Empty fields are not allowed").escape(),
     ],
     async (req, res) => {
+        let statusMessage = 'failed';
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+            return res.status(400).json({ statusMessage, msg: errors.array() });
         }
         const { email, password } = req.body;
         try {
             const existingUser = await User.findOne({ email });
             if (!existingUser) {
-                return res.status(400).json({ error: "User does not exist" });
+                return res.status(400).json({ statusMessage, msg: "User does not exist" });
             }
             const passwordMatch = await bcrypt.compare(
                 password,
                 existingUser.password
             );
             if (!passwordMatch) {
-                return res.status(400).json({ error: "Incorrect password" });
+                return res.status(400).json({ statusMessage, msg: "Incorrect password" });
             }
             const payload = {
                 user: {
@@ -87,21 +88,24 @@ router.post(
                 },
             };
             const authToken = jwt.sign(payload, JWT_SECRET_KEY);
-            return res.status(200).json(authToken);
+            statusMessage = 'success';
+            return res.status(200).json({statusMessage, msg: authToken});
         } catch (error) {
-            return res.status(500).json({ error: "Internal server error" });
+            return res.status(500).json({ statusMessage, msg: "Internal server error" });
         }
     }
 );
 
 // Route 3: Get user data after logging in "/api/auth/userData"
 router.get('/userData', fetchUser, async (req, res) => {
+    let statusMessage = 'failed';
     try {
         const userId = req.userId;
         const userData = await User.findById(userId).select('-password');
-        return res.status(200).json(userData);
+        statusMessage = 'success';
+        return res.status(200).json({statusMessage, msg: userData});
     } catch (error) {
-        return  res.status(500).json({error: 'Internal server error'});
+        return  res.status(500).json({statusMessage, msg: 'Internal server error'});
     }
 });
 

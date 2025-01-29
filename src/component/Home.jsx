@@ -2,11 +2,13 @@ import React from 'react';
 import Notes from './Notes';
 import AddNote from './AddNote';
 
-const Home = () => {
+const Home = (props) => {
+  const { setAlert } = props;
+
   return (
     <>
-      <AddNote />
-      <Notes />
+      <AddNote setAlert={setAlert} />
+      <Notes setAlert={setAlert} />
     </>
   )
 }
